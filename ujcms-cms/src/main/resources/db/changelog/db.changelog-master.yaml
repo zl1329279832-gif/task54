@@ -33,6 +33,9 @@ databaseChangeLog:
   - include:
       file: db.changelog-10.0-whole.yaml
       relativeToChangelogFile: true
+  - include:
+      file: db.changelog-11.1.yaml
+      relativeToChangelogFile: true
   #  - include:
   #      file: org/quartz/impl/jdbcjobstore/liquibase.quartz.init.xml
   - include:

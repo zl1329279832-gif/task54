@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ujcms.cms.core.mapper.PreviewTokenRoleMapper">
+    <select id="selectRoleIdsByTokenId" resultType="java.lang.Long">
+        select role_id_
+        from ujcms_preview_token_role
+        where preview_token_id_ = #{tokenId,jdbcType=BIGINT}
+    </select>
+    <insert id="insert">
+        insert into ujcms_preview_token_role (preview_token_id_, role_id_)
+        values (#{tokenId,jdbcType=BIGINT}, #{roleId,jdbcType=BIGINT})
+    </insert>
+    <delete id="deleteByTokenId" parameterType="long">
+        delete from ujcms_preview_token_role
+        where preview_token_id_ = #{tokenId,jdbcType=BIGINT}
+    </delete>
+</mapper>

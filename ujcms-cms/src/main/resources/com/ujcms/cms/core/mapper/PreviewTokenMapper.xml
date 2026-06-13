@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ujcms.cms.core.mapper.PreviewTokenMapper">
+    <resultMap id="BaseResultMap" type="com.ujcms.cms.core.domain.PreviewToken">
+        <id column="id_" jdbcType="BIGINT" property="id" />
+        <result column="publish_task_id_" jdbcType="BIGINT" property="publishTaskId" />
+        <result column="token_hash_" jdbcType="VARCHAR" property="tokenHash" />
+        <result column="site_id_" jdbcType="BIGINT" property="siteId" />
+        <result column="content_type_" jdbcType="VARCHAR" property="contentType" />
+        <result column="content_id_" jdbcType="BIGINT" property="contentId" />
+        <result column="expires_at_" jdbcType="TIMESTAMP" property="expiresAt" />
+        <result column="max_usage_" jdbcType="INTEGER" property="maxUsage" />
+        <result column="usage_count_" jdbcType="INTEGER" property="usageCount" />
+        <result column="created_" jdbcType="TIMESTAMP" property="created" />
+    </resultMap>
+    <resultMap extends="BaseResultMap" id="ResultMap" type="com.ujcms.cms.core.domain.PreviewToken">
+        <association column="publish_task_id_" javaType="com.ujcms.cms.core.domain.PublishTask"
+                     property="publishTask" select="com.ujcms.cms.core.mapper.PublishTaskMapper.select" />
+    </resultMap>
+    <select id="select" parameterType="long" resultMap="ResultMap">
+        select
+        <include refid="Column_List" />
+        from ujcms_preview_token t
+        where t.id_ = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="selectByTokenHash" resultMap="BaseResultMap">
+        select
+        <include refid="Column_List" />
+        from ujcms_preview_token t
+        where t.token_hash_ = #{tokenHash,jdbcType=VARCHAR}
+    </select>
+    <select id="selectByPublishTaskId" resultMap="BaseResultMap">
+        select
+        <include refid="Column_List" />
+        from ujcms_preview_token t
+        where t.publish_task_id_ = #{publishTaskId,jdbcType=BIGINT}
+        order by t.created_ desc
+    </select>
+    <delete id="delete" parameterType="long">
+        delete from ujcms_preview_token
+        where id_ = #{id,jdbcType=BIGINT}
+    </delete>
+    <delete id="deleteByPublishTaskId" parameterType="long">
+        delete from ujcms_preview_token
+        where publish_task_id_ = #{publishTaskId,jdbcType=BIGINT}
+    </delete>
+    <delete id="deleteExpired">
+        delete from ujcms_preview_token
+        where expires_at_ &lt; #{dateTime,jdbcType=TIMESTAMP}
+    </delete>
+    <update id="updateUsageCount">
+        update ujcms_preview_token
+        set usage_count_ = #{usageCount,jdbcType=INTEGER}
+        where id_ = #{id,jdbcType=BIGINT}
+    </update>
+    <insert id="insert" parameterType="com.ujcms.cms.core.domain.PreviewToken">
+        insert into ujcms_preview_token (id_, publish_task_id_, token_hash_, site_id_, content_type_, content_id_,
+            expires_at_, max_usage_, usage_count_, created_)
+        values (#{id,jdbcType=BIGINT}, #{publishTaskId,jdbcType=BIGINT}, #{tokenHash,jdbcType=VARCHAR},
+            #{siteId,jdbcType=BIGINT}, #{contentType,jdbcType=VARCHAR}, #{contentId,jdbcType=BIGINT},
+            #{expiresAt,jdbcType=TIMESTAMP}, #{maxUsage,jdbcType=INTEGER},
+            #{usageCount,jdbcType=INTEGER}, #{created,jdbcType=TIMESTAMP})
+    </insert>
+    <sql id="Column_List">
+        t.id_, t.publish_task_id_, t.token_hash_, t.site_id_, t.content_type_, t.content_id_,
+        t.expires_at_, t.max_usage_, t.usage_count_, t.created_
+    </sql>
+</mapper>

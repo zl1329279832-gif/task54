@@ -26,6 +26,8 @@ import com.ujcms.cms.core.domain.User;
 import com.ujcms.cms.core.generator.HtmlGenerator;
 import com.ujcms.cms.core.service.ArticleService;
 import com.ujcms.cms.core.service.ConfigService;
+import com.ujcms.cms.core.service.PreviewTokenService;
+import com.ujcms.cms.core.service.PublishTaskService;
 
 /**
  * 定时任务 配置
@@ -153,4 +155,52 @@ public class ScheduleConfig {
         }
     }
 
+    /**
+     * 预约发布任务 JobDetail
+     */
+    @Bean("publishTaskExecutionJobDetail")
+    public JobDetailFactoryBean publishTaskExecutionJobDetail() {
+        final JobDetailFactoryBean factoryBean = new JobDetailFactoryBean();
+        factoryBean.setJobClass(PublishTaskExecutionJob.class);
+        // 没有绑定触发器时，必须设置持久性为 true
+        factoryBean.setDurability(true);
+        return factoryBean;
+    }
+
+    /**
+     * 预约发布任务 Trigger。每5分钟执行一次。
+     * <p>
+     * 需要集群。只要在一台机器上执行即可，不需要在多台机器同时运行。
+     */
+    @Bean("publishTaskExecutionTrigger")
+    public CronTriggerFactoryBean publishTaskExecutionTrigger(
+            @Qualifier("publishTaskExecutionJobDetail") JobDetail publishTaskExecutionJobDetail) {
+        CronTriggerFactoryBean factoryBean = new CronTriggerFactoryBean();
+        factoryBean.setJobDetail(publishTaskExecutionJobDetail);
+        factoryBean.setCronExpression("0 0/5 * * * ?");
+        return factoryBean;
+    }
+
+    /**
+     * 预约发布任务执行 Job
+     */
+    @Component
+    public static class PublishTaskExecutionJob extends QuartzJobBean {
+        private final PublishTaskService publishTaskService;
+        private final PreviewTokenService previewTokenService;
+
+        public PublishTaskExecutionJob(PublishTaskService publishTaskService,
+                                       PreviewTokenService previewTokenService) {
+            this.publishTaskService = publishTaskService;
+            this.previewTokenService = previewTokenService;
+        }
+
+        @Override
+        protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+            // 执行到期的预约发布任务
+            publishTaskService.executePendingTasks();
+            // 清理过期的预览令牌
+            previewTokenService.cleanupExpiredTokens();
+        }
+    }
 }
