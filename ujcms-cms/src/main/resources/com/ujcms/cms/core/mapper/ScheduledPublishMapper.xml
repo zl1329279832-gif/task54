@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ujcms.cms.core.mapper.ScheduledPublishMapper"><resultMap id="BaseResultMap" type="com.ujcms.cms.core.domain.ScheduledPublish">
+    <id column="id_" jdbcType="BIGINT" property="id" />
+    <result column="site_id_" jdbcType="BIGINT" property="siteId" />
+    <result column="target_site_id_" jdbcType="BIGINT" property="targetSiteId" />
+    <result column="channel_id_" jdbcType="BIGINT" property="channelId" />
+    <result column="article_id_" jdbcType="BIGINT" property="articleId" />
+    <result column="user_id_" jdbcType="BIGINT" property="userId" />
+    <result column="publish_date_" jdbcType="TIMESTAMP" property="publishDate" />
+    <result column="preview_token_" jdbcType="VARCHAR" property="previewToken" />
+    <result column="preview_expiry_" jdbcType="TIMESTAMP" property="previewExpiry" />
+    <result column="access_role_ids_" jdbcType="VARCHAR" property="accessRoleIds" />
+    <result column="status_" jdbcType="SMALLINT" property="status" />
+    <result column="created_" jdbcType="TIMESTAMP" property="created" />
+    <result column="executed_date_" jdbcType="TIMESTAMP" property="executedDate" />
+  </resultMap><resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.ujcms.cms.core.domain.ScheduledPublish">
+    <result column="error_info_" jdbcType="LONGVARCHAR" property="errorInfo" />
+  </resultMap>
+    <resultMap extends="ResultMapWithBLOBs" id="ResultMap" type="com.ujcms.cms.core.domain.ScheduledPublish">
+        <association column="user_id_" javaType="com.ujcms.cms.core.domain.User" property="user" select="com.ujcms.cms.core.mapper.UserMapper.select" />
+        <association column="site_id_" javaType="com.ujcms.cms.core.domain.Site" property="site" select="com.ujcms.cms.core.mapper.SiteMapper.select" />
+        <association column="target_site_id_" javaType="com.ujcms.cms.core.domain.Site" property="targetSite" select="com.ujcms.cms.core.mapper.SiteMapper.select" />
+        <association column="channel_id_" javaType="com.ujcms.cms.core.domain.Channel" property="channel" select="com.ujcms.cms.core.mapper.ChannelMapper.select" />
+        <association column="article_id_" javaType="com.ujcms.cms.core.domain.Article" property="article" select="com.ujcms.cms.core.mapper.ArticleMapper.select" />
+    </resultMap>
+    <delete id="deleteByUserId" parameterType="long">
+        delete
+        from ujcms_scheduled_publish
+        where user_id_ = #{userId,jdbcType=BIGINT}
+    </delete>
+    <delete id="deleteBySiteId" parameterType="long">
+        delete
+        from ujcms_scheduled_publish
+        where site_id_ = #{siteId,jdbcType=BIGINT}
+    </delete>
+    <sql id="selectAllSelect" />
+  <sql id="selectAllJoin" />
+  <sql id="selectAllWhere" />
+  <select id="selectAll" resultMap="ResultMap">
+    <include refid="com.ujcms.cms.core.mapper.SeqMapper.Select_All">
+      <property name="tableName" value="ujcms_scheduled_publish" />
+    </include>
+  </select>
+  <select id="select" parameterType="long" resultMap="ResultMap">
+    select
+    <include refid="Column_List" />
+    from ujcms_scheduled_publish t
+    where t.id_ = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectByToken" parameterType="string" resultMap="ResultMap">
+    select
+    <include refid="Column_List" />
+    from ujcms_scheduled_publish t
+    where t.preview_token_ = #{previewToken,jdbcType=VARCHAR}
+  </select>
+  <select id="selectPendingBefore" resultMap="ResultMap">
+    select
+    <include refid="Column_List" />
+    from ujcms_scheduled_publish t
+    where t.status_ = 0
+      and t.publish_date_ &lt;= #{dateTime,jdbcType=TIMESTAMP}
+  </select>
+  <delete id="delete" parameterType="long">
+    delete from ujcms_scheduled_publish
+    where id_ = #{id,jdbcType=BIGINT}
+  </delete><update id="update" parameterType="com.ujcms.cms.core.domain.ScheduledPublish">
+    update ujcms_scheduled_publish
+    set site_id_ = #{siteId,jdbcType=BIGINT},
+      target_site_id_ = #{targetSiteId,jdbcType=BIGINT},
+      channel_id_ = #{channelId,jdbcType=BIGINT},
+      article_id_ = #{articleId,jdbcType=BIGINT},
+      user_id_ = #{userId,jdbcType=BIGINT},
+      publish_date_ = #{publishDate,jdbcType=TIMESTAMP},
+      preview_token_ = #{previewToken,jdbcType=VARCHAR},
+      preview_expiry_ = #{previewExpiry,jdbcType=TIMESTAMP},
+      access_role_ids_ = #{accessRoleIds,jdbcType=VARCHAR},
+      status_ = #{status,jdbcType=SMALLINT},
+      created_ = #{created,jdbcType=TIMESTAMP},
+      executed_date_ = #{executedDate,jdbcType=TIMESTAMP},
+      error_info_ = #{errorInfo,jdbcType=LONGVARCHAR}
+    where id_ = #{id,jdbcType=BIGINT}
+  </update><insert id="insert" parameterType="com.ujcms.cms.core.domain.ScheduledPublish">
+    insert into ujcms_scheduled_publish (id_, site_id_, target_site_id_, channel_id_, article_id_, user_id_, publish_date_, preview_token_, preview_expiry_, access_role_ids_, status_, created_, executed_date_, error_info_)
+    values (#{id,jdbcType=BIGINT}, #{siteId,jdbcType=BIGINT}, #{targetSiteId,jdbcType=BIGINT}, #{channelId,jdbcType=BIGINT}, #{articleId,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{publishDate,jdbcType=TIMESTAMP}, #{previewToken,jdbcType=VARCHAR}, #{previewExpiry,jdbcType=TIMESTAMP}, #{accessRoleIds,jdbcType=VARCHAR}, #{status,jdbcType=SMALLINT}, #{created,jdbcType=TIMESTAMP}, #{executedDate,jdbcType=TIMESTAMP}, #{errorInfo,jdbcType=LONGVARCHAR})
+  </insert><sql id="Column_List">
+    t.id_, t.site_id_, t.target_site_id_, t.channel_id_, t.article_id_, t.user_id_, t.publish_date_, t.preview_token_, t.preview_expiry_, t.access_role_ids_, t.status_, t.created_, t.executed_date_, t.error_info_
+  </sql></mapper>

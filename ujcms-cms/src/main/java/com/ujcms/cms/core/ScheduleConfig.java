@@ -26,6 +26,7 @@ import com.ujcms.cms.core.domain.User;
 import com.ujcms.cms.core.generator.HtmlGenerator;
 import com.ujcms.cms.core.service.ArticleService;
 import com.ujcms.cms.core.service.ConfigService;
+import com.ujcms.cms.core.service.ScheduledPublishService;
 
 /**
  * 定时任务 配置
@@ -150,6 +151,48 @@ public class ScheduleConfig {
             Long siteId = configService.getUnique().getDefaultSiteId();
             String taskName = "task.html.articleRelated";
             htmlGenerator.updateArticleRelatedHtml(siteId, User.ANONYMOUS_ID, taskName, articles, null);
+        }
+    }
+
+    /**
+     * 执行预约发布 JobDetail
+     */
+    @Bean("executeScheduledPublishJobDetail")
+    public JobDetailFactoryBean executeScheduledPublishJobDetail() {
+        final JobDetailFactoryBean factoryBean = new JobDetailFactoryBean();
+        factoryBean.setJobClass(ExecuteScheduledPublishJob.class);
+        factoryBean.setDurability(true);
+        return factoryBean;
+    }
+
+    /**
+     * 执行预约发布 Trigger。每5分钟执行一次。
+     * <p>
+     * 需要集群。只要在一台机器上执行即可，不需要在多台机器同时运行。
+     */
+    @Bean("executeScheduledPublishTrigger")
+    public CronTriggerFactoryBean executeScheduledPublishTrigger(
+            @Qualifier("executeScheduledPublishJobDetail") JobDetail executeScheduledPublishJobDetail) {
+        CronTriggerFactoryBean factoryBean = new CronTriggerFactoryBean();
+        factoryBean.setJobDetail(executeScheduledPublishJobDetail);
+        factoryBean.setCronExpression("0 0/5 * * * ?");
+        return factoryBean;
+    }
+
+    /**
+     * 执行预约发布 Job
+     */
+    @Component
+    public static class ExecuteScheduledPublishJob extends QuartzJobBean {
+        private final ScheduledPublishService scheduledPublishService;
+
+        public ExecuteScheduledPublishJob(ScheduledPublishService scheduledPublishService) {
+            this.scheduledPublishService = scheduledPublishService;
+        }
+
+        @Override
+        protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+            scheduledPublishService.executePendingTasks();
         }
     }
 

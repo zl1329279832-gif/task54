@@ -1,0 +1,109 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1718280000000-1
+      author: PONY (generated)
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                  name: id_
+                  remarks: 预约发布ID
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: site_id_
+                  remarks: 站点ID
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: target_site_id_
+                  remarks: 目标站点ID
+                  type: BIGINT
+              - column:
+                  name: channel_id_
+                  remarks: 栏目ID
+                  type: BIGINT
+              - column:
+                  name: article_id_
+                  remarks: 文章ID
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: user_id_
+                  remarks: 用户ID
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: publish_date_
+                  remarks: 发布时间
+                  type: datetime
+              - column:
+                  constraints:
+                    nullable: false
+                  name: preview_token_
+                  remarks: 预览令牌
+                  type: VARCHAR(64)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: preview_expiry_
+                  remarks: 预览过期时间
+                  type: datetime
+              - column:
+                  name: access_role_ids_
+                  remarks: 可访问角色ID列表(逗号分隔)
+                  type: VARCHAR(500)
+              - column:
+                  constraints:
+                    nullable: false
+                  defaultValueNumeric: 0
+                  name: status_
+                  remarks: 状态(0:待执行,1:已执行,2:已取消,3:失败)
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  name: created_
+                  remarks: 创建日期
+                  type: datetime
+              - column:
+                  name: executed_date_
+                  remarks: 执行日期
+                  type: datetime
+              - column:
+                  name: error_info_
+                  remarks: 错误信息
+                  type: LONGVARCHAR
+            remarks: 预约发布表
+            tableName: ujcms_scheduled_publish
+  - changeSet:
+      id: 1718280000000-2
+      author: PONY (generated)
+      changes:
+        - createIndex:
+            columns:
+              - column:
+                  name: preview_token_
+            indexName: idx_scheduled_publish_token
+            tableName: ujcms_scheduled_publish
+            unique: true
+  - changeSet:
+      id: 1718280000000-3
+      author: PONY (generated)
+      changes:
+        - createIndex:
+            columns:
+              - column:
+                  name: status_
+              - column:
+                  name: publish_date_
+            indexName: idx_scheduled_publish_status_date
+            tableName: ujcms_scheduled_publish
