@@ -316,6 +316,22 @@ public class ArticleService implements ChannelDeleteListener, UserDeleteListener
         return mapper.select(id);
     }
 
+    /**
+     * 按 ID 和站点 ID 获取文章。若文章不属于指定站点，返回 null。
+     *
+     * @param id     文章ID
+     * @param siteId 站点ID
+     * @return 文章对象，不存在或不属于指定站点时返回 null
+     */
+    @Nullable
+    public Article selectBySiteId(Long id, Long siteId) {
+        Article article = mapper.select(id);
+        if (article == null || !article.getSiteId().equals(siteId)) {
+            return null;
+        }
+        return article;
+    }
+
     public List<Article> selectList(ArticleArgs args) {
         QueryInfo queryInfo = QueryParser.parse(args.getQueryMap(), GeneratedArticle.TABLE_NAME, "order_desc,id_desc");
         return mapper.selectAll(queryInfo, args.getChannelAncestorIds(), args.getOrgIds(), args.getArticleRoleIds(),

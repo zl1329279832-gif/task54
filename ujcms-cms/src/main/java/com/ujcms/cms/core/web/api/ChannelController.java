@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.ujcms.common.web.exception.Http404Exception;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -142,8 +143,14 @@ public class ChannelController {
     @Operation(summary = "栏目对象_Channel")
     @ApiResponses(value = {@ApiResponse(description = "栏目对象")})
     @GetMapping("/{id:[\\d]+}")
-    public Channel show(@Parameter(description = "栏目ID") @PathVariable Long id) {
-        return channelService.select(id);
+    public Channel show(@Parameter(description = "栏目ID") @PathVariable Long id,
+                        HttpServletRequest request) {
+        Site site = siteResolver.resolve(request);
+        Channel channel = channelService.selectBySiteId(id, site.getId());
+        if (channel == null) {
+            throw new Http404Exception("Channel not found. ID: " + id);
+        }
+        return channel;
     }
 
     /**
@@ -160,12 +167,10 @@ public class ChannelController {
     @ApiResponses(value = {@ApiResponse(description = "栏目对象")})
     @GetMapping("/alias/{alias}")
     public Channel alias(@Parameter(description = "栏目别名") @PathVariable String alias,
-                         @Parameter(description = "站点ID") Long siteId,
+                         @Parameter(description = "站点ID（已忽略，始终使用当前站点）") Long siteId,
                          HttpServletRequest request) {
-        if (siteId == null) {
-            siteId = siteResolver.resolve(request).getId();
-        }
-        return channelService.findBySiteIdAndAlias(siteId, alias);
+        Site site = siteResolver.resolve(request);
+        return channelService.findBySiteIdAndAlias(site.getId(), alias);
     }
 
     @Operation(summary = "获取栏目浏览次数")

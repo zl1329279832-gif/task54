@@ -58,6 +58,17 @@ public class SiteSpringCache implements ApplicationContextAware {
         logger.debug("SiteSpringCache clear()");
     }
 
+    /**
+     * 按站点清除缓存。当前实现与 {@link #clear()} 等价（MyBatis L2 CacheKey 无法按站点精确前缀匹配），
+     * 但方法签名预留了站点维度，后续切换到 Redis 等支持 key 前缀的缓存时可直接实现按站点清除。
+     *
+     * @param siteId 站点ID
+     */
+    @CacheEvict(allEntries = true)
+    public void clearBySite(@SuppressWarnings("unused") Long siteId) {
+        logger.debug("SiteSpringCache clearBySite({})", siteId);
+    }
+
     public static SiteSpringCache me() {
         Objects.requireNonNull(applicationContext, "applicationContext must not be null");
         return applicationContext.getBean(SiteSpringCache.class);

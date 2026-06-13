@@ -216,6 +216,22 @@ public class ChannelService implements ModelDeleteListener, SiteDeleteListener {
         return mapper.select(id);
     }
 
+    /**
+     * 按 ID 和站点 ID 获取栏目。若栏目不属于指定站点，返回 null。
+     *
+     * @param id     栏目ID
+     * @param siteId 站点ID
+     * @return 栏目对象，不存在或不属于指定站点时返回 null
+     */
+    @Nullable
+    public Channel selectBySiteId(Long id, Long siteId) {
+        Channel channel = mapper.select(id);
+        if (channel == null || !channel.getSiteId().equals(siteId)) {
+            return null;
+        }
+        return channel;
+    }
+
     @Nullable
     public Article findFirstArticle(Long channelId) {
         List<Article> list = PageMethod.offsetPage(0, 1, false).doSelectPage(() ->

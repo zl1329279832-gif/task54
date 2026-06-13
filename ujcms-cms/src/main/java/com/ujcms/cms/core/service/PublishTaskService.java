@@ -186,8 +186,8 @@ public class PublishTaskService implements UserDeleteListener, SiteDeleteListene
                 publishArticle(task);
             }
 
-            // 刷新站点缓存
-            SiteSpringCache.me().clear();
+            // 刷新站点缓存（按站点维度清除）
+            SiteSpringCache.me().clearBySite(task.getSiteId());
 
             // 标记为成功
             mapper.updateStatus(id, PublishTask.STATUS_SUCCESS, null);

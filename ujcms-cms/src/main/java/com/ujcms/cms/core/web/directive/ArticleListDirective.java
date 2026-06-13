@@ -5,6 +5,7 @@ import com.ujcms.cms.core.domain.generated.GeneratedChannel;
 import com.ujcms.cms.core.service.ArticleService;
 import com.ujcms.cms.core.service.ChannelService;
 import com.ujcms.cms.core.service.args.ArticleArgs;
+import com.ujcms.cms.core.support.Contexts;
 import com.ujcms.cms.core.support.Frontends;
 import com.ujcms.cms.core.web.support.Directives;
 import com.ujcms.common.freemarker.Freemarkers;
@@ -107,8 +108,13 @@ public class ArticleListDirective implements TemplateDirectiveModel {
     public static void assemble(ArticleArgs args, Map<String, ?> params, Long defaultSiteId,
                                 ChannelService channelService) {
         Long siteId = getLong(params, SITE_ID);
+        boolean isAllSite = getBoolean(params, IS_ALL_SITE, false);
+        // 匿名用户不允许跨站查询，防止串站
+        if (isAllSite && Contexts.findCurrentUser() == null) {
+            isAllSite = false;
+        }
         // 不获取所有站点，则给默认站点ID
-        if (siteId == null && !getBoolean(params, IS_ALL_SITE, false)) {
+        if (siteId == null && !isAllSite) {
             siteId = defaultSiteId;
         }
         Boolean isIncludeSubSite = getBoolean(params, IS_INCLUDE_SUB_SITE, false);

@@ -17,6 +17,7 @@ import com.ujcms.cms.core.domain.Article;
 import com.ujcms.cms.core.domain.Channel;
 import com.ujcms.cms.core.domain.Site;
 import com.ujcms.cms.core.domain.Task;
+import com.ujcms.cms.core.domain.cache.SiteSpringCache;
 import com.ujcms.cms.core.domain.generated.GeneratedChannel;
 import com.ujcms.cms.core.service.ArticleService;
 import com.ujcms.cms.core.service.ChannelService;
@@ -59,6 +60,8 @@ public class HtmlGenerator extends AbstractGenerator {
                     handleChannel(taskId, site.getId(), htmlService::updateChannelHtml);
                     htmlService.deleteHomeHtml(site);
                     htmlService.updateHomeHtml(site);
+                    // 生成完毕后清除缓存，确保 API 获取最新数据
+                    SiteSpringCache.me().clear();
                 });
     }
 
@@ -79,6 +82,8 @@ public class HtmlGenerator extends AbstractGenerator {
                         htmlService.deleteHomeHtml(site);
                         htmlService.updateHomeHtml(site);
                     }
+                    // 生成完毕后清除缓存，确保 API 获取最新数据
+                    SiteSpringCache.me().clear();
                 });
     }
 
@@ -140,6 +145,8 @@ public class HtmlGenerator extends AbstractGenerator {
                     // 更新首页HTML
                     sites.forEach(htmlService::deleteHomeHtml);
                     sites.forEach(htmlService::updateHomeHtml);
+                    // 生成完毕后清除缓存，确保 API 获取最新数据
+                    SiteSpringCache.me().clear();
                 }
         );
     }
@@ -172,6 +179,8 @@ public class HtmlGenerator extends AbstractGenerator {
                         htmlService.deleteHomeHtml(site);
                         htmlService.updateHomeHtml(site);
                     }
+                    // 生成完毕后清除缓存，确保 API 获取最新数据
+                    SiteSpringCache.me().clear();
                 }
         );
     }

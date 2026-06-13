@@ -214,10 +214,18 @@ public class ArticleController {
     @ApiResponses(value = {@ApiResponse(description = "文章对象")})
     @GetMapping("/{id:[\\d]+}")
     public Article show(@Parameter(description = "文章ID") @PathVariable Long id,
-                        @Parameter(description = "是否后台预览") @RequestParam(defaultValue = "false") boolean preview) {
+                        @Parameter(description = "是否后台预览") @RequestParam(defaultValue = "false") boolean preview,
+                        HttpServletRequest request) {
         Article article = articleService.select(id);
         if (article == null) {
             throw new Http404Exception("Article not found. ID: " + id);
+        }
+        // 非预览模式下校验站点归属，防止跨站访问
+        if (!preview) {
+            Site site = siteResolver.resolve(request);
+            if (!article.getSiteId().equals(site.getId())) {
+                throw new Http404Exception("Article not found. ID: " + id);
+            }
         }
         User user = Contexts.findCurrentUser();
         checkAccessPermission(article, user, groupService, channelService, orgService, preview);

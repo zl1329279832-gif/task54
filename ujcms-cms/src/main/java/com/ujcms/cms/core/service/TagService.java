@@ -61,6 +61,22 @@ public class TagService implements SiteDeleteListener {
         return mapper.select(id);
     }
 
+    /**
+     * 按 ID 和站点 ID 获取标签。若标签不属于指定站点，返回 null。
+     *
+     * @param id     标签ID
+     * @param siteId 站点ID
+     * @return 标签对象，不存在或不属于指定站点时返回 null
+     */
+    @Nullable
+    public Tag selectBySiteId(Long id, Long siteId) {
+        Tag tag = mapper.select(id);
+        if (tag == null || !tag.getSiteId().equals(siteId)) {
+            return null;
+        }
+        return tag;
+    }
+
     public List<Tag> selectList(TagArgs args) {
         QueryInfo queryInfo = QueryParser.parse(args.getQueryMap(), Tag.TABLE_NAME, "id_desc");
         return mapper.selectAll(queryInfo);
