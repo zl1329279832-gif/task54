@@ -4,13 +4,19 @@ import com.ujcms.cms.core.service.ArticleService;
 import com.ujcms.cms.core.service.AttachmentService;
 import com.ujcms.cms.core.service.ChannelService;
 import com.ujcms.cms.core.service.UserService;
+import org.springframework.beans.BeansException;
 import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.util.Collections.emptyList;
 
@@ -19,7 +25,7 @@ import static java.util.Collections.emptyList;
  */
 @Component
 @CacheConfig(cacheNames = ContentStatCache.CACHE_NAME)
-public class ContentStatCache {
+public class ContentStatCache implements ApplicationContextAware {
     /**
      * 缓存名称
      */
@@ -79,5 +85,29 @@ public class ContentStatCache {
         result.put("total", total);
         result.put("last7day", last7day);
         return result;
+    }
+
+    @CacheEvict(key = "'article'+#siteId")
+    public void evictArticleStat(Long siteId) {
+        // Spring Cache proxy handles eviction
+    }
+
+    @CacheEvict(allEntries = true)
+    public void clear() {
+        // Clears all content stat cache entries
+    }
+
+    public static ContentStatCache me() {
+        Objects.requireNonNull(applicationContext, "applicationContext must not be null");
+        return applicationContext.getBean(ContentStatCache.class);
+    }
+
+    @Nullable
+    private static ApplicationContext applicationContext;
+
+    @SuppressWarnings("java:S2696")
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        ContentStatCache.applicationContext = applicationContext;
     }
 }

@@ -2,6 +2,7 @@ package com.ujcms.cms.core.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.page.PageMethod;
+import com.ujcms.cms.core.component.ContentStatCache;
 import com.ujcms.cms.core.domain.Article;
 import com.ujcms.cms.core.domain.OperationLog;
 import com.ujcms.cms.core.domain.OperationLogExt;
@@ -188,6 +189,8 @@ public class PublishTaskService implements UserDeleteListener, SiteDeleteListene
 
             // 刷新站点缓存
             SiteSpringCache.me().clear();
+            // 刷新内容统计缓存
+            ContentStatCache.me().evictArticleStat(task.getSiteId());
 
             // 标记为成功
             mapper.updateStatus(id, PublishTask.STATUS_SUCCESS, null);

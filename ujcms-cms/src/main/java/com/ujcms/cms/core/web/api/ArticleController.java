@@ -44,6 +44,7 @@ import com.ujcms.cms.core.web.directive.ArticleListDirective;
 import com.ujcms.cms.core.web.directive.ArticleNextDirective;
 import com.ujcms.cms.core.web.support.Directives;
 import com.ujcms.cms.core.web.support.SiteResolver;
+import com.ujcms.cms.core.web.support.ValidUtils;
 import com.ujcms.common.query.QueryUtils;
 import com.ujcms.common.web.Servlets;
 import com.ujcms.common.web.Views;
@@ -214,11 +215,14 @@ public class ArticleController {
     @ApiResponses(value = {@ApiResponse(description = "文章对象")})
     @GetMapping("/{id:[\\d]+}")
     public Article show(@Parameter(description = "文章ID") @PathVariable Long id,
-                        @Parameter(description = "是否后台预览") @RequestParam(defaultValue = "false") boolean preview) {
+                        @Parameter(description = "是否后台预览") @RequestParam(defaultValue = "false") boolean preview,
+                        HttpServletRequest request) {
         Article article = articleService.select(id);
         if (article == null) {
             throw new Http404Exception("Article not found. ID: " + id);
         }
+        Site site = siteResolver.resolve(request);
+        ValidUtils.dataInSite(article.getSiteId(), site.getId());
         User user = Contexts.findCurrentUser();
         checkAccessPermission(article, user, groupService, channelService, orgService, preview);
         return article;
@@ -292,7 +296,13 @@ public class ArticleController {
 
     @Operation(summary = "获取文章浏览次数")
     @GetMapping("/view/{id:[\\d]+}")
-    public long view(@Parameter(description = "文章ID") @PathVariable Long id) {
+    public long view(@Parameter(description = "文章ID") @PathVariable Long id, HttpServletRequest request) {
+        Article article = articleService.select(id);
+        if (article == null) {
+            return 0;
+        }
+        Site site = siteResolver.resolve(request);
+        ValidUtils.dataInSite(article.getSiteId(), site.getId());
         return viewCountService.viewArticle(id);
     }
 
@@ -371,7 +381,13 @@ public class ArticleController {
 
     @Operation(summary = "获取文章统计数据")
     @GetMapping("/buffer/{id:[\\d]+}")
-    public ArticleBuffer buffer(@Parameter(description = "文章ID") @PathVariable Long id) {
+    public ArticleBuffer buffer(@Parameter(description = "文章ID") @PathVariable Long id, HttpServletRequest request) {
+        Article article = articleService.select(id);
+        if (article == null) {
+            throw new Http404Exception("Article not found. ID: " + id);
+        }
+        Site site = siteResolver.resolve(request);
+        ValidUtils.dataInSite(article.getSiteId(), site.getId());
         ArticleBuffer buffer = bufferService.select(id);
         if (buffer == null) {
             throw new Http404Exception("ArticleBuffer not found. id=" + id);

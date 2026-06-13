@@ -20,9 +20,11 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import com.ujcms.cms.core.component.ContentStatCache;
 import com.ujcms.cms.core.component.ViewCountService;
 import com.ujcms.cms.core.domain.Article;
 import com.ujcms.cms.core.domain.User;
+import com.ujcms.cms.core.domain.cache.SiteSpringCache;
 import com.ujcms.cms.core.generator.HtmlGenerator;
 import com.ujcms.cms.core.service.ArticleService;
 import com.ujcms.cms.core.service.ConfigService;
@@ -148,6 +150,10 @@ public class ScheduleConfig {
             for (Article article : articles) {
                 article.adjustStatus();
                 articleService.update(article);
+            }
+            if (!articles.isEmpty()) {
+                SiteSpringCache.me().clear();
+                ContentStatCache.me().clear();
             }
             Long siteId = configService.getUnique().getDefaultSiteId();
             String taskName = "task.html.articleRelated";

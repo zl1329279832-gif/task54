@@ -10,8 +10,10 @@ import com.ujcms.cms.core.service.ChannelService;
 import com.ujcms.cms.core.service.args.ChannelArgs;
 import com.ujcms.cms.core.web.directive.ChannelListDirective;
 import com.ujcms.cms.core.web.support.SiteResolver;
+import com.ujcms.cms.core.web.support.ValidUtils;
 import com.ujcms.common.query.QueryUtils;
 import com.ujcms.common.web.Views;
+import com.ujcms.common.web.exception.Http404Exception;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -142,8 +144,14 @@ public class ChannelController {
     @Operation(summary = "栏目对象_Channel")
     @ApiResponses(value = {@ApiResponse(description = "栏目对象")})
     @GetMapping("/{id:[\\d]+}")
-    public Channel show(@Parameter(description = "栏目ID") @PathVariable Long id) {
-        return channelService.select(id);
+    public Channel show(@Parameter(description = "栏目ID") @PathVariable Long id, HttpServletRequest request) {
+        Channel channel = channelService.select(id);
+        if (channel == null) {
+            throw new Http404Exception(Channel.NOT_FOUND + id);
+        }
+        Site site = siteResolver.resolve(request);
+        ValidUtils.dataInSite(channel.getSiteId(), site.getId());
+        return channel;
     }
 
     /**
@@ -160,23 +168,34 @@ public class ChannelController {
     @ApiResponses(value = {@ApiResponse(description = "栏目对象")})
     @GetMapping("/alias/{alias}")
     public Channel alias(@Parameter(description = "栏目别名") @PathVariable String alias,
-                         @Parameter(description = "站点ID") Long siteId,
+                         @Parameter(description = "站点ID（忽略，始终使用当前站点）") Long siteId,
                          HttpServletRequest request) {
-        if (siteId == null) {
-            siteId = siteResolver.resolve(request).getId();
-        }
-        return channelService.findBySiteIdAndAlias(siteId, alias);
+        // 始终使用当前站点，忽略调用方传入的 siteId，防止跨站点查询
+        Long resolvedSiteId = siteResolver.resolve(request).getId();
+        return channelService.findBySiteIdAndAlias(resolvedSiteId, alias);
     }
 
     @Operation(summary = "获取栏目浏览次数")
     @GetMapping("/view/{id:[\\d]+}")
-    public long view(@Parameter(description = "栏目ID") @PathVariable Long id) {
+    public long view(@Parameter(description = "栏目ID") @PathVariable Long id, HttpServletRequest request) {
+        Channel channel = channelService.select(id);
+        if (channel == null) {
+            return 0;
+        }
+        Site site = siteResolver.resolve(request);
+        ValidUtils.dataInSite(channel.getSiteId(), site.getId());
         return viewCountService.viewChannel(id);
     }
 
     @Operation(summary = "获取栏目统计数据")
     @GetMapping("/buffer/{id:[\\d]+}")
-    public ChannelBuffer buffer(@Parameter(description = "栏目ID") @PathVariable Integer id) {
+    public ChannelBuffer buffer(@Parameter(description = "栏目ID") @PathVariable Integer id, HttpServletRequest request) {
+        Channel channel = channelService.select(id.longValue());
+        if (channel == null) {
+            throw new Http404Exception(Channel.NOT_FOUND + id);
+        }
+        Site site = siteResolver.resolve(request);
+        ValidUtils.dataInSite(channel.getSiteId(), site.getId());
         return bufferService.select(id);
     }
 }
